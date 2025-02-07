@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avião de Apostas</title>
+    <style>
+        body { 
+            text-align: center; 
+            font-family: Arial, sans-serif; 
+            background: #4a90e2; /* Cor de fundo simples */
+            color: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #game-container {
+            position: relative;
+            width: 350px;
+            height: 320px;
+            background: rgba(0, 0, 0, 0.3); /* Fundo com leve transparência */
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        #avião {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%); /* Avião deitado */
+            width: 100px;
+            animation: flutuar 1.5s infinite alternate ease-in-out;
+        }
+
+        @keyframes flutuar {
+            0% { transform: translate(-50%, 0); }
+            100% { transform: translate(-50%, 10px); }
+        }
+
+        #multiplicador {
+            font-size: 22px;
+            font-weight: bold;
+            margin-top: 110px;
+        }
+
+        .aposta-container {
+            margin-top: 10px;
+        }
+
+        .aposta-container button {
+            width: 35px;
+            font-size: 20px;
+            padding: 5px;
+            border: none;
+            background: #ffcc00;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .aposta-container button:hover {
+            background: #ffb347;
+        }
+
+        .aposta-container span {
+            font-size: 18px;
+            margin: 0 10px;
+        }
+
+        button {
+            background: #ffcc00;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: 0.3s;
+        }
+
+        button:disabled {
+            background: gray;
+            cursor: not-allowed;
+        }
+
+        button:hover {
+            background: #ffb347;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <img id="avião" src="https://raw.githubusercontent.com/nexusofcia/logingoogle/refs/heads/main/BackgroundEraser_20250206_211234735.png" alt="Avião">
+        <p id="multiplicador">Multiplicador: <span>1.00x</span></p>
+        <p>Saldo: R$<span id="saldo">100</span></p>
+        
+        <div class="aposta-container">
+            <button id="menos">-</button>
+            <span>Aposta: R$<span id="aposta">10</span></span>
+            <button id="mais">+</button>
+        </div>
+
+        <button id="start">Iniciar Aposta</button>
+        <button id="parar" disabled>Parar</button>
+    </div>
+
+    <script>
+        let saldo = localStorage.getItem("saldo") ? parseFloat(localStorage.getItem("saldo")) : 100; // Salva saldo
+        let aposta = 10;
+        let multiplicador = 1;
+        let ativo = false;
+        let intervalo;
+
+        // Exibe o saldo salvo
+        document.getElementById("saldo").textContent = saldo.toFixed(0);
+
+        document.getElementById("start").addEventListener("click", () => {
+            if (saldo < aposta) {
+                alert("Saldo insuficiente!");
+                return;
+            }
+
+            saldo -= aposta;
+            localStorage.setItem("saldo", saldo); // Salva saldo atualizado
+            document.getElementById("saldo").textContent = saldo.toFixed(0);
+            multiplicador = 1;
+            ativo = true;
+            document.getElementById("parar").disabled = false;
+            document.getElementById("start").disabled = true;
+
+            intervalo = setInterval(() => {
+                multiplicador += 0.1;
+                document.getElementById("multiplicador").innerHTML = "Multiplicador: <span>" + multiplicador.toFixed(2) + "x</span>";
+
+                if (Math.random() < 0.02) { // 2% de chance do avião explodir
+                    clearInterval(intervalo);
+                    alert("O avião explodiu! Você perdeu.");
+                    ativo = false;
+                    document.getElementById("parar").disabled = true;
+                    document.getElementById("start").disabled = false;
+                }
+            }, 300);
+        });
+
+        document.getElementById("parar").addEventListener("click", () => {
+            if (ativo) {
+                clearInterval(intervalo);
+                saldo += Math.floor(aposta * multiplicador);
+                localStorage.setItem("saldo", saldo); // Salva saldo ao parar
+                document.getElementById("saldo").textContent = saldo.toFixed(0);
+                alert("Você parou em " + multiplicador.toFixed(2) + "x e ganhou R$" + Math.floor(aposta * multiplicador));
+                ativo = false;
+                document.getElementById("parar").disabled = true;
+                document.getElementById("start").disabled = false;
+            }
+        });
+
+        document.getElementById("mais").addEventListener("click", () => {
+            aposta += 5;
+            document.getElementById("aposta").textContent = aposta;
+        });
+
+        document.getElementById("menos").addEventListener("click", () => {
+            if (aposta > 5) {
+                aposta -= 5;
+                document.getElementById("aposta").textContent = aposta;
+            }
+        });
+
+    </script>
+
+</body>
+</html>
