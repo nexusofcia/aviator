@@ -8,7 +8,7 @@
         body { 
             text-align: center; 
             font-family: Arial, sans-serif; 
-            background: #4a90e2; /* Cor de fundo simples */
+            background: #000; /* Fundo preto */
             color: white;
             margin: 0;
             padding: 0;
@@ -22,11 +22,11 @@
         #game-container {
             position: relative;
             width: 350px;
-            height: 320px;
-            background: rgba(0, 0, 0, 0.3); /* Fundo com leve transparência */
+            height: 380px;
+            background: rgba(255, 0, 0, 0.2); /* Fundo vermelho escuro */
             border-radius: 10px;
             padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
             text-align: center;
         }
 
@@ -34,7 +34,7 @@
             position: absolute;
             top: 20px;
             left: 50%;
-            transform: translateX(-50%); /* Avião deitado */
+            transform: translateX(-50%);
             width: 100px;
             animation: flutuar 1.5s infinite alternate ease-in-out;
         }
@@ -47,41 +47,33 @@
         #multiplicador {
             font-size: 22px;
             font-weight: bold;
-            margin-top: 110px;
+            margin-top: 100px;
         }
 
         .aposta-container {
             margin-top: 10px;
         }
 
-        .aposta-container button {
-            width: 35px;
-            font-size: 20px;
-            padding: 5px;
-            border: none;
-            background: #ffcc00;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .aposta-container button:hover {
-            background: #ffb347;
-        }
-
-        .aposta-container span {
+        .aposta-container input {
+            width: 80px;
             font-size: 18px;
-            margin: 0 10px;
+            padding: 5px;
+            text-align: center;
+            border: 2px solid #ff0000;
+            border-radius: 5px;
+            background: #222;
+            color: white;
         }
 
         button {
-            background: #ffcc00;
+            background: #ff0000;
             border: none;
             padding: 10px 20px;
-            margin-top: 20px;
+            margin-top: 15px;
             border-radius: 5px;
             cursor: pointer;
             font-size: 18px;
+            color: white;
             transition: 0.3s;
         }
 
@@ -91,7 +83,7 @@
         }
 
         button:hover {
-            background: #ffb347;
+            background: #cc0000;
         }
 
     </style>
@@ -104,33 +96,39 @@
         <p>Saldo: R$<span id="saldo">100</span></p>
         
         <div class="aposta-container">
-            <button id="menos">-</button>
-            <span>Aposta: R$<span id="aposta">10</span></span>
-            <button id="mais">+</button>
+            <span>Aposta: R$</span>
+            <input type="number" id="aposta" value="10" min="5" step="5">
         </div>
 
         <button id="start">Iniciar Aposta</button>
         <button id="parar" disabled>Parar</button>
+        <button id="saque">Sacar</button>
     </div>
 
     <script>
-        let saldo = localStorage.getItem("saldo") ? parseFloat(localStorage.getItem("saldo")) : 100; // Salva saldo
+        let saldo = localStorage.getItem("saldo") ? parseFloat(localStorage.getItem("saldo")) : 100;
         let aposta = 10;
         let multiplicador = 1;
         let ativo = false;
         let intervalo;
 
-        // Exibe o saldo salvo
         document.getElementById("saldo").textContent = saldo.toFixed(0);
 
         document.getElementById("start").addEventListener("click", () => {
+            aposta = parseFloat(document.getElementById("aposta").value);
+            
+            if (isNaN(aposta) || aposta < 5) {
+                alert("A aposta mínima é R$5.");
+                return;
+            }
+
             if (saldo < aposta) {
                 alert("Saldo insuficiente!");
                 return;
             }
 
             saldo -= aposta;
-            localStorage.setItem("saldo", saldo); // Salva saldo atualizado
+            localStorage.setItem("saldo", saldo);
             document.getElementById("saldo").textContent = saldo.toFixed(0);
             multiplicador = 1;
             ativo = true;
@@ -155,7 +153,7 @@
             if (ativo) {
                 clearInterval(intervalo);
                 saldo += Math.floor(aposta * multiplicador);
-                localStorage.setItem("saldo", saldo); // Salva saldo ao parar
+                localStorage.setItem("saldo", saldo);
                 document.getElementById("saldo").textContent = saldo.toFixed(0);
                 alert("Você parou em " + multiplicador.toFixed(2) + "x e ganhou R$" + Math.floor(aposta * multiplicador));
                 ativo = false;
@@ -164,16 +162,24 @@
             }
         });
 
-        document.getElementById("mais").addEventListener("click", () => {
-            aposta += 5;
-            document.getElementById("aposta").textContent = aposta;
-        });
+        document.getElementById("saque").addEventListener("click", () => {
+            let saque = prompt("Digite o valor para sacar:");
+            saque = parseFloat(saque);
 
-        document.getElementById("menos").addEventListener("click", () => {
-            if (aposta > 5) {
-                aposta -= 5;
-                document.getElementById("aposta").textContent = aposta;
+            if (isNaN(saque) || saque <= 0) {
+                alert("Digite um valor válido.");
+                return;
             }
+
+            if (saque > saldo) {
+                alert("Saldo insuficiente.");
+                return;
+            }
+
+            saldo -= saque;
+            localStorage.setItem("saldo", saldo);
+            document.getElementById("saldo").textContent = saldo.toFixed(0);
+            alert("Saque de R$" + saque.toFixed(2) + " realizado com sucesso.");
         });
 
     </script>
